@@ -46,6 +46,8 @@ This project uses:
 - `clap` for CLI argument parsing
 - `tokio` for async runtime
 - `anyhow` for error handling
+- `reqwest` for making API requests to Jupiter
+- `serde` for JSON parsing and serialization
 
 ## Contributing
 
