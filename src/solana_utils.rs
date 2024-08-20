@@ -5,6 +5,7 @@ use spl_token::state::Mint;
 use solana_sdk::program_pack::Pack;
 use serde::{Deserialize, Serialize};
 use reqwest;
+use tokio::try_join;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenInfo {
@@ -65,14 +66,20 @@ async fn fetch_website_from_coinmarketcap(symbol: &str, api_key: &str) -> Result
     Ok(None)
 }
 
+async fn fetch_on_chain_info(pubkey: &Pubkey) -> Result<String> {
+    let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".to_string());
+    let account = rpc_client.get_account(pubkey)?;
+    let mint = Mint::unpack(&account.data)?;
+    Ok(mint.supply.to_string())
+}
+
 pub async fn fetch_token_info(address: &str, cmc_api_key: &str) -> Result<TokenInfo> {
     let pubkey = address.parse::<Pubkey>().map_err(|e| anyhow!("Invalid token address: {}", e))?;
     
-    let rpc_client = RpcClient::new("https://api.mainnet-beta.solana.com".to_string());
-    let account = rpc_client.get_account(&pubkey)?;
-    let mint = Mint::unpack(&account.data)?;
-
-    let jupiter_info = fetch_jupiter_info(address).await?;
+    let (jupiter_info, total_supply) = try_join!(
+        fetch_jupiter_info(address),
+        fetch_on_chain_info(&pubkey)
+    )?;
 
     let website = if let Some(jup_website) = &jupiter_info.website {
         Some(jup_website.clone())
@@ -83,7 +90,7 @@ pub async fn fetch_token_info(address: &str, cmc_api_key: &str) -> Result<TokenI
     Ok(TokenInfo {
         name: jupiter_info.name,
         symbol: jupiter_info.symbol,
-        total_supply: mint.supply.to_string(),
+        total_supply,
         website,
     })
 }

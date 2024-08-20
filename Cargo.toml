@@ -1,5 +1,5 @@
 [package]
-name = "Rust_CLI_sol"
+name = "rust_cli_sol"
 version = "0.1.0"
 edition = "2021"
 
@@ -24,3 +24,9 @@ dotenv = "0.15"
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "2.1"
+mockito = "1.0"
+
+[[bin]]
+name = "rust_cli_sol"
+path = "src/main.rs"
+

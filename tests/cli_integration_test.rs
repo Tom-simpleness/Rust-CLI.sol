@@ -1,9 +1,10 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
 
-#[test]
-fn test_cli_integration() {
-    let mut cmd = Command::cargo_bin("Rust_CLI_sol").unwrap();
+
+#[tokio::test]
+async fn test_cli_integration() {
+    let mut cmd = Command::cargo_bin("rust_cli_sol").unwrap();
     cmd.arg("--token-address")
         .arg("So11111111111111111111111111111111111111112")  // Wrapped SOL token address
         .assert()
@@ -15,12 +16,13 @@ fn test_cli_integration() {
         .stdout(predicate::str::contains("Website:").and(predicate::str::contains("(Source: Jup API)").or(predicate::str::contains("Not available"))));
 }
 
-#[test]
-fn test_cli_invalid_address() {
-    let mut cmd = Command::cargo_bin("Rust_CLI_sol").unwrap();
+#[tokio::test]
+async fn test_cli_invalid_address() {
+    let mut cmd = Command::cargo_bin("rust_cli_sol").unwrap();
     cmd.arg("--token-address")
         .arg("InvalidAddress")
         .assert()
         .failure()
         .stderr(predicate::str::contains("Error: Invalid token address: Invalid Base58 string"));
 }
+

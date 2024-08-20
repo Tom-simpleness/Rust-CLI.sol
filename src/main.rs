@@ -2,7 +2,7 @@ mod solana_utils;
 mod dns_lookup;
 
 use clap::Parser;
-use anyhow::Result;
+use anyhow::{Result, Context};
 use solana_utils::fetch_token_info;
 use dns_lookup::lookup_dns_records;
 use std::process;
@@ -18,10 +18,10 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    dotenv().ok(); // Load environment variables from .env file
+    dotenv().context("Failed to load .env file")?;
 
     let args = Args::parse();
-    let cmc_api_key = env::var("CMC_API_KEY").expect("CMC_API_KEY not set in .env file");
+    let cmc_api_key = env::var("CMC_API_KEY").context("CMC_API_KEY not set in .env file")?;
 
     println!("Fetching info for token: {}", args.token_address);
 
@@ -34,10 +34,9 @@ async fn main() -> Result<()> {
                 println!("Website: {} (Source: Jup API)", website);
                 println!("DNS lookup research ...");
 
-                // Perform DNS lookup
                 match lookup_dns_records(&website).await {
                     Ok((domain, dns_records)) => println!("DNS Records for {}: {} (Domain searched: {})", website, dns_records, domain),
-                    Err(e) => println!("Failed to perform DNS lookup: {}", e),
+                    Err(e) => eprintln!("Failed to perform DNS lookup: {:#}", e),
                 }
             } else {
                 println!("Website: Not available");
@@ -45,7 +44,7 @@ async fn main() -> Result<()> {
             Ok(())
         },
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Error: {:#}", e);
             process::exit(1);
         }
     }
