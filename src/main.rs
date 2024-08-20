@@ -6,29 +6,32 @@ use anyhow::Result;
 use solana_utils::fetch_token_info;
 use dns_lookup::lookup_dns_records;
 use std::process;
+use dotenv::dotenv;
+use std::env;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg(short, long)]
     token_address: String,
-    #[arg(short, long)]
-    cmc_api_key: String,
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok(); // Load environment variables from .env file
+
     let args = Args::parse();
-    
+    let cmc_api_key = env::var("CMC_API_KEY").expect("CMC_API_KEY not set in .env file");
+
     println!("Fetching info for token: {}", args.token_address);
-    
-    match fetch_token_info(&args.token_address, &args.cmc_api_key).await {
+
+    match fetch_token_info(&args.token_address, &cmc_api_key).await {
         Ok(info) => {
-            println!("Token Name: {} (Source: Jupiter API)", info.name);
-            println!("Token Symbol: {} (Source: Jupiter API)", info.symbol);
+            println!("Token Name: {} (Source: Jup API)", info.name);
+            println!("Token Symbol: {} (Source: Jup API)", info.symbol);
             println!("Total Supply: {} (Source: On-chain Mint)", info.total_supply);
             if let Some(website) = info.website {
-                println!("Website: {} (Source: CoinMarketCap API)", website);
+                println!("Website: {} (Source: Jup API)", website);
                 println!("DNS lookup research ...");
 
                 // Perform DNS lookup
