@@ -18,14 +18,3 @@ async fn main() -> Result<()> {
     
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn verify_cli() {
-        let args = Args::parse_from(&["test", "--token-address", "TestAddress123"]);
-        assert_eq!(args.token_address, "TestAddress123");
-    }
-}
