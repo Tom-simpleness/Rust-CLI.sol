@@ -1,5 +1,9 @@
+mod solana_utils;
+
 use clap::Parser;
 use anyhow::Result;
+use solana_utils::fetch_token_info;
+use std::process;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -14,7 +18,19 @@ async fn main() -> Result<()> {
     
     println!("Fetching info for token: {}", args.token_address);
     
-    // TODO: Implement token info fetching logic
-    
-    Ok(())
+    match fetch_token_info(&args.token_address).await {
+        Ok(info) => {
+            println!("Token Name: {}", info.name);
+            println!("Token Symbol: {}", info.symbol);
+            println!("Total Supply: {}", info.total_supply);
+            if let Some(website) = info.website {
+                println!("Website: {}", website);
+            }
+            Ok(())
+        },
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    }
 }
