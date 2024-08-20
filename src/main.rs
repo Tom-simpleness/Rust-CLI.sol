@@ -20,11 +20,13 @@ async fn main() -> Result<()> {
     
     match fetch_token_info(&args.token_address).await {
         Ok(info) => {
-            println!("Token Name: {}", info.name);
-            println!("Token Symbol: {}", info.symbol);
-            println!("Total Supply: {}", info.total_supply);
+            println!("Token Name: {} (Source: Jup API)", info.name);
+            println!("Token Symbol: {} (Source: Jup API)", info.symbol);
+            println!("Total Supply: {} (Source: On-chain Mint)", info.total_supply);
             if let Some(website) = info.website {
-                println!("Website: {}", website);
+                println!("Website: {} (Source: Jup API)", website);
+            } else {
+                println!("Website: Not available");
             }
             Ok(())
         },
