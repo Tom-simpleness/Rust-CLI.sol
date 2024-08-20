@@ -45,10 +45,10 @@ For USDC:
 cargo run -- --token-address EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
 ```
 
-For Wrapped SOL:
+For Raydium:
 
 ```
-cargo run -- --token-address So11111111111111111111111111111111111111112
+cargo run -- --token-address 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R
 ```
 
 ## Testing
