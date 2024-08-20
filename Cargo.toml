@@ -18,6 +18,7 @@ dns-lookup = "1.0"
 anyhow = "1.0"
 bumpalo = "=3.11.1"
 spl-token = "3.5"
+url = "2.2"
 
 [dev-dependencies]
 assert_cmd = "2.0"

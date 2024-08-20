@@ -30,6 +30,7 @@ dependencies = [
  "solana-sdk",
  "spl-token 3.5.0",
  "tokio",
+ "url",
 ]
 
 [[package]]
