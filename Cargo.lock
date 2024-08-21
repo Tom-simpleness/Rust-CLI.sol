@@ -2314,6 +2314,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "mpl-token-metadata"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "caf0f61b553e424a6234af1268456972ee66c2222e1da89079242251fa7479e5"
+dependencies = [
+ "borsh 0.10.3",
+ "num-derive 0.3.3",
+ "num-traits",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3202,11 +3215,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "assert_cmd",
+ "borsh 0.10.3",
  "bumpalo",
  "clap 4.5.16",
  "dns-lookup",
  "dotenv",
  "mockito",
+ "mpl-token-metadata",
  "predicates 2.1.5",
  "reqwest",
  "serde",

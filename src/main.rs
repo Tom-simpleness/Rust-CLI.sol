@@ -1,51 +1,59 @@
-mod solana_utils;
-mod dns_lookup;
+use {
+  anyhow::{Result, anyhow},
+  mpl_token_metadata::accounts::Metadata,
+  solana_sdk::pubkey::Pubkey,
+  solana_client::rpc_client::RpcClient,
+  spl_token::state::Mint,
+  solana_sdk::program_pack::Pack,
+};
 
-use clap::Parser;
-use anyhow::{Result, Context};
-use solana_utils::fetch_token_info;
-use dns_lookup::lookup_dns_records;
-use std::process;
-use dotenv::dotenv;
-use std::env;
+fn main() -> Result<()> {
+  // Initialize the RPC client with your Solana network URL
+  let rpc_url = "https://api.mainnet-beta.solana.com".to_string();
+  let client = RpcClient::new(rpc_url);
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    #[arg(short, long)]
-    token_address: String,
-}
+  // The token address you want to fetch info for
+  let token_address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v".parse::<Pubkey>()?;
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    dotenv().context("Failed to load .env file")?;
+  // Find the metadata PDA
+  let (metadata_address, _) = Metadata::find_pda(&token_address);
 
-    let args = Args::parse();
-    let cmc_api_key = env::var("CMC_API_KEY").context("CMC_API_KEY not set in .env file")?;
+  // Fetch the metadata account
+  let metadata_account = client.get_account(&metadata_address)?;
 
-    println!("Fetching info for token: {}", args.token_address);
+  // Deserialize the metadata
+  let metadata = Metadata::from_bytes(&metadata_account.data)
+      .map_err(|e| anyhow!("Failed to deserialize metadata: {}", e))?;
 
-    match fetch_token_info(&args.token_address, &cmc_api_key).await {
-        Ok(info) => {
-            println!("Token Name: {} (Source: Jup API)", info.name);
-            println!("Token Symbol: {} (Source: Jup API)", info.symbol);
-            println!("Total Supply: {} (Source: On-chain Mint)", info.total_supply);
-            if let Some(website) = info.website {
-                println!("Website: {} (Source: Jup API)", website);
-                println!("DNS lookup research ...");
+  // Fetch the mint account
+  let mint_account = client.get_account(&token_address)?;
 
-                match lookup_dns_records(&website).await {
-                    Ok((domain, dns_records)) => println!("DNS Records for {}: {} (Domain searched: {})", website, dns_records, domain),
-                    Err(e) => eprintln!("Failed to perform DNS lookup: {:#}", e),
-                }
-            } else {
-                println!("Website: Not available");
-            }
-            Ok(())
-        },
-        Err(e) => {
-            eprintln!("Error: {:#}", e);
-            process::exit(1);
-        }
-    }
+  // Deserialize the mint account
+  let mint = Mint::unpack(&mint_account.data)
+      .map_err(|e| anyhow!("Failed to deserialize mint account: {}", e))?;
+
+  // Print out basic info
+  println!("Token Name: {}", metadata.name);
+  println!("Token Symbol: {}", metadata.symbol);
+  println!("Token URI: {}", metadata.uri);
+  println!("Token Supply: {}", mint.supply);
+  println!("Token Decimals: {}", mint.decimals);
+
+  // If you need more detailed info, you can access other fields of the metadata struct
+  if let Some(creators) = metadata.creators {
+      println!("Creators:");
+      for creator in creators {
+          println!("  Address: {}, Share: {}", creator.address, creator.share);
+      }
+  }
+
+  println!("Seller Fee Basis Points: {}", metadata.seller_fee_basis_points);
+  println!("Is Mutable: {}", metadata.is_mutable);
+
+  if let Some(collection) = metadata.collection {
+      println!("Collection: {}", collection.key);
+      println!("Verified: {}", collection.verified);
+  }
+
+  Ok(())
 }
